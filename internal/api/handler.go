@@ -26,4 +26,5 @@ func Redirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "forge.shekharx.in/abc")
 }
