@@ -1,8 +1,9 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
+
+	"github/SXsid/url-forge/ui"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -10,14 +11,13 @@ import (
 
 func NewRouter() http.Handler {
 	r := chi.NewRouter()
+	fileServer := http.FileServerFS(ui.StaticFS)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("<h1>Hello world</h1>"))
-	})
-	r.Get("/{code}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, r.PathValue("code"))
-	})
 
+	r.Get("/", HomePageHandler)
+	r.Handle("/assests/*", fileServer)
+	r.Get("/{code}", Redirect)
+	r.Post("/api/create", Register)
 	return r
 }
