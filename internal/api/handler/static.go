@@ -1,4 +1,4 @@
-package api
+package handler
 
 import (
 	"fmt"
@@ -18,13 +18,4 @@ func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		http.Error(w, "server side error", http.StatusInternalServerError)
 	}
-}
-
-func Redirect(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusPermanentRedirect)
-	fmt.Fprint(w, r.PathValue("code"))
-}
-
-func Register(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "forge.shekharx.in/abc")
 }

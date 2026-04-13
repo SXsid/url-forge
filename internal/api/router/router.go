@@ -1,8 +1,9 @@
-package api
+package router
 
 import (
 	"net/http"
 
+	"github/SXsid/url-forge/internal/api/handler"
 	"github/SXsid/url-forge/ui"
 
 	"github.com/go-chi/chi/v5"
@@ -14,10 +15,9 @@ func NewRouter() http.Handler {
 	fileServer := http.FileServerFS(ui.StaticFS)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-
-	r.Get("/", HomePageHandler)
+	r.Get("/", handler.HomePageHandler)
 	r.Handle("/assests/*", fileServer)
-	r.Get("/{code}", Redirect)
-	r.Post("/api/create", Register)
+	r.Get("/{code}", handler.Redirect)
+	r.Post("/api/create", handler.Register)
 	return r
 }

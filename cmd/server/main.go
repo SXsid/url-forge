@@ -10,15 +10,18 @@ import (
 	"syscall"
 	"time"
 
-	"github/SXsid/url-forge/internal/api"
+	"github/SXsid/url-forge/internal/api/router"
 )
 
 func main() {
 	port := flag.Int64("p", 8080, "port for the app")
 	flag.Parse()
 	server := http.Server{
-		Addr:    fmt.Sprintf(":%d", *port),
-		Handler: api.NewRouter(),
+		Addr:         fmt.Sprintf(":%d", *port),
+		Handler:      router.NewRouter(),
+		IdleTimeout:  30 * time.Second,
+		WriteTimeout: 2 * time.Second,
+		ReadTimeout:  1 * time.Second,
 	}
 
 	go func() {
