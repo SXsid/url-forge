@@ -8,7 +8,7 @@ import (
 	"github/SXsid/url-forge/ui"
 )
 
-func HomePageHandler(w http.ResponseWriter, r *http.Request) {
+func (h *URLHandler) HomePageHandler(w http.ResponseWriter, r *http.Request) {
 	f, err := ui.StaticFS.Open("index.html")
 	if err != nil {
 		http.Error(w, "server side error", http.StatusInternalServerError)
@@ -18,4 +18,7 @@ func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		http.Error(w, "server side error", http.StatusInternalServerError)
 	}
+}
+
+func (h *URLHandler) GetAnylitics(w http.ResponseWriter, r *http.Request) {
 }

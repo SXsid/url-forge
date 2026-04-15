@@ -10,15 +10,25 @@ import (
 	"syscall"
 	"time"
 
+	"github/SXsid/url-forge/internal"
 	"github/SXsid/url-forge/internal/api/router"
+	"github/SXsid/url-forge/internal/config"
+	"github/SXsid/url-forge/internal/logger"
 )
 
 func main() {
 	port := flag.Int64("p", 8080, "port for the app")
 	flag.Parse()
+	config, err := config.NewServerConfig()
+	if err != nil {
+		panic(err)
+	}
+	logger := logger.NewLogger()
+	app := internal.NewApplication(logger, config)
+
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%d", *port),
-		Handler:      router.NewRouter(),
+		Handler:      router.NewRouter(app),
 		IdleTimeout:  30 * time.Second,
 		WriteTimeout: 2 * time.Second,
 		ReadTimeout:  1 * time.Second,

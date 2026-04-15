@@ -5,6 +5,6 @@ import (
 	"net/http"
 )
 
-func Register(w http.ResponseWriter, r *http.Request) {
+func (h *URLHandler) Register(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "forge.shekharx.in/abc")
 }
