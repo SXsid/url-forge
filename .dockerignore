@@ -1,0 +1,28 @@
+# Git
+.git
+.gitignore
+
+# Docker itself
+Dockerfile
+.dockerignore
+
+# Env files (secrets!)
+.env
+*.env
+
+# Binaries
+*.exe
+*.out
+server
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+
+# Readme/docs
+*.md
+README*

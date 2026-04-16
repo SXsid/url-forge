@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,25 +16,20 @@ import (
 )
 
 func main() {
-	port := flag.Int64("p", 8080, "port for the app")
-	flag.Parse()
-	config, err := config.NewServerConfig()
-	if err != nil {
-		panic(err)
-	}
+	config := config.NewServerConfig()
 	logger := logger.NewLogger()
 	app := internal.NewApplication(logger, config)
 
 	server := http.Server{
-		Addr:         fmt.Sprintf(":%d", *port),
+		Addr:         fmt.Sprintf(":%d", config.Port),
 		Handler:      router.NewRouter(app),
-		IdleTimeout:  30 * time.Second,
-		WriteTimeout: 2 * time.Second,
-		ReadTimeout:  1 * time.Second,
+		IdleTimeout:  time.Duration(config.IdealTime) * time.Second,
+		WriteTimeout: time.Duration(config.WriteTime) * time.Second,
+		ReadTimeout:  time.Duration(config.ReadTime) * time.Second,
 	}
 
 	go func() {
-		fmt.Printf("server is up and running at %d\n", *port)
+		fmt.Printf("server is up and running at %d\n", config.Port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			fmt.Print(err)
 		}
