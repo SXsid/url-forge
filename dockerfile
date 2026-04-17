@@ -7,7 +7,6 @@ RUN go build -o server  ./cmd/server/main.go
 
 FROM  scratch 
 COPY --from=builder  /app/server /server
-ENV APP_ENV=dev
 EXPOSE 8080
 CMD [ "/server" ]
 
