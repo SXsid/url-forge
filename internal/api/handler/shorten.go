@@ -19,8 +19,11 @@ var keys = [4]uint32{
 	0x9ABCDEF0,
 }
 
-func feistel(half uint32, key int) uint32 {
-	return half ^ keys[key]
+func feistel(r uint32, key int) uint32 {
+	x := r ^ keys[key]
+	x *= 0x45d9f3b
+	x ^= x >> 16
+	return x
 }
 
 func obsufication(baseNumber uint64) uint64 {

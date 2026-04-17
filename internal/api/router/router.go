@@ -18,7 +18,7 @@ func NewRouter(app *internal.Applicaton) http.Handler {
 	r.Get("/", app.UrlHandler.HomePageHandler)
 	r.Handle("/assests/*", fileServer)
 	r.Get("/{code}", app.UrlHandler.Redirect)
-	r.Post("/api/create", app.UrlHandler.Register)
+	r.Get("/api/create", app.UrlHandler.Register)
 	// sereve reenere html page
 	r.Get("/status/{code}", app.UrlHandler.GetAnylitics)
 	return r

@@ -17,7 +17,11 @@ type ServerConfig struct {
 	Redis     RedisConfig
 }
 type DBConfig struct {
-	DSN string
+	DSN             string
+	MaxConn         int
+	MinConn         int
+	MaxConnLifeTime int
+	MaxConnIdelTime int
 }
 type RedisConfig struct {
 	URL  string
@@ -56,7 +60,11 @@ func NewServerConfig() *ServerConfig {
 		WriteTime: getEnvInt("write_time", true),
 		ReadTime:  getEnvInt("read_time", true),
 		Database: DBConfig{
-			DSN: getEnv("db_dsn", true),
+			DSN:             getEnv("db_dsn", true),
+			MaxConn:         getEnvInt("db_max_conn", false),
+			MinConn:         getEnvInt("db_min_conn", false),
+			MaxConnLifeTime: getEnvInt("db_max_conn_life_time", false),
+			MaxConnIdelTime: getEnvInt("db_max_conn_idle_time", false),
 		},
 		Redis: RedisConfig{
 			URL:  getEnv("redis_url", true),

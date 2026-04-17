@@ -1,11 +1,19 @@
 package repository
 
-import "context"
+import (
+	"context"
 
-type UrlRepository struct{}
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
-func NewUrlRepository() *UrlRepository {
-	return &UrlRepository{}
+type UrlRepository struct {
+	db *pgxpool.Pool
+}
+
+func NewUrlRepository(pg *pgxpool.Pool) *UrlRepository {
+	return &UrlRepository{
+		db: pg,
+	}
 }
 
 func (r *UrlRepository) GetURL(ctx context.Context, code string) (string, error) {
