@@ -68,9 +68,22 @@ func (h *URLHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
+
+	code, err := h.repo.IsUrlExist(ctx, request.Url)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// alredy have a code reutn that
+	if code != "" {
+		fmt.Fprint(w, code)
+		return
+	}
+
 	// process (mosty servicee layer )
 	tx, err := h.repo.BeginTx(ctx)
 	defer tx.Rollback(ctx)
+	// INFO : ideall  a db error shold be logged not send so please take care on that in prod
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -81,13 +94,13 @@ func (h *URLHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	code := encode(obsufication(id))
-	if err := h.repo.UpdateCode(ctx, tx, id, code); err != nil {
+	newcode := encode(obsufication(id))
+	if err := h.repo.UpdateCode(ctx, tx, id, newcode); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if err := tx.Commit(ctx); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	fmt.Fprint(w, code)
+	fmt.Fprint(w, newcode)
 }

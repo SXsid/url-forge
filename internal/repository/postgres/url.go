@@ -22,6 +22,23 @@ func NewUrlRepository(pg *pgxpool.Pool) *UrlPostgresRepository {
 	}
 }
 
+func (r *UrlPostgresRepository) BeginTx(ctx context.Context) (repository.Transaction, error) {
+	return r.db.Begin(ctx)
+}
+
+func (r *UrlPostgresRepository) IsUrlExist(ctx context.Context, url string) (string, error) {
+	var code string
+	err := r.db.QueryRow(ctx, ` SELECT code FROM url WHERE original_url = $1`, url).Scan(&code)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return code, nil
+}
+
 func (r *UrlPostgresRepository) GetURL(ctx context.Context, code string) (string, error) {
 	var url string
 	if err := r.db.QueryRow(ctx, `SELECT original_url FROM url WHERE code=$1`, code).Scan(&url); err != nil {
@@ -31,14 +48,6 @@ func (r *UrlPostgresRepository) GetURL(ctx context.Context, code string) (string
 		return "", err
 	}
 	return url, nil
-}
-
-func (r *UrlPostgresRepository) GetCode(ctx context.Context, url string) (string, error) {
-	return "", nil
-}
-
-func (r *UrlPostgresRepository) BeginTx(ctx context.Context) (repository.Transaction, error) {
-	return r.db.Begin(ctx)
 }
 
 func (r *UrlPostgresRepository) InsertURL(ctx context.Context, tx repository.Transaction, url string) (uint64, error) {
@@ -62,4 +71,8 @@ func (r *UrlPostgresRepository) UpdateCode(ctx context.Context, tx repository.Tr
 
 func (r *UrlPostgresRepository) UpdateAnylitics(ctx context.Context, code string) error {
 	return nil
+}
+
+func (r *UrlPostgresRepository) GetAnyltics(ctx context.Context, code string) (domain.Urls, error) {
+	return domain.Urls{}, nil
 }
