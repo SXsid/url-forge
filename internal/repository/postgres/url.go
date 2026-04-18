@@ -1,46 +1,65 @@
-package repository
+package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
+
+	"github/SXsid/url-forge/internal/domain"
+	"github/SXsid/url-forge/internal/repository"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type UrlRepository struct {
+type UrlPostgresRepository struct {
 	db *pgxpool.Pool
 }
 
-func NewUrlRepository(pg *pgxpool.Pool) *UrlRepository {
-	return &UrlRepository{
+func NewUrlRepository(pg *pgxpool.Pool) *UrlPostgresRepository {
+	return &UrlPostgresRepository{
 		db: pg,
 	}
 }
 
-func (r *UrlRepository) GetURL(ctx context.Context, code string) (string, error) {
+func (r *UrlPostgresRepository) GetURL(ctx context.Context, code string) (string, error) {
+	var url string
+	if err := r.db.QueryRow(ctx, `SELECT original_url FROM url WHERE code=$1`, code).Scan(&url); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", domain.ErrCodeNotFound
+		}
+		return "", err
+	}
+	return url, nil
+}
+
+func (r *UrlPostgresRepository) GetCode(ctx context.Context, url string) (string, error) {
 	return "", nil
 }
 
-func (r *UrlRepository) GetCode(ctx context.Context, url string) (string, error) {
-	return "", nil
+func (r *UrlPostgresRepository) BeginTx(ctx context.Context) (repository.Transaction, error) {
+	return r.db.Begin(ctx)
 }
 
-func (r *UrlRepository) Insert(ctx context.Context, url, code string) error {
-	tx, err := r.db.Begin(ctx)
+func (r *UrlPostgresRepository) InsertURL(ctx context.Context, tx repository.Transaction, url string) (uint64, error) {
+	var id uint64
+	if err := tx.QueryRow(ctx, `INSERT INTO url (original_url ) VALUES ($1) RETURNING id`, url).Scan(&id); err != nil {
+		return 0, fmt.Errorf("error create a url entry:%w", err)
+	}
+	return id, nil
+}
+
+func (r *UrlPostgresRepository) UpdateCode(ctx context.Context, tx repository.Transaction, id uint64, code string) error {
+	commandtag, err := tx.Exec(ctx, `UPDATE url SET code=$1 where id=$2`, code, id)
 	if err != nil {
-		return fmt.Errorf("error starting transcation : %v", err)
+		return fmt.Errorf("error updating code for id %d :%w", id, err)
 	}
-	defer tx.Rollback(ctx)
-	tx.Exec(ctx, `INSERT INTO url (code,original_url) VALUES ($1,$2) RETURNING id`)
-	tx.Exec(ctx, `UPDATE url SET `)
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("error commiting transcation :%w", err)
+	if commandtag.RowsAffected() == 0 {
+		return domain.ErrCodeNotFound
 	}
-
 	return nil
 }
 
-func (r *UrlRepository) UpdateAnylitics(ctx context.Context, code string) error {
+func (r *UrlPostgresRepository) UpdateAnylitics(ctx context.Context, code string) error {
 	return nil
 }

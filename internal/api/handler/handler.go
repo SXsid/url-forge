@@ -15,8 +15,8 @@ type URLHandler struct {
 type URLRepository interface {
 	GetURL(ctx context.Context, code string) (string, error)
 	GetCode(ctx context.Context, url string) (string, error)
-	InsertURL(ctx context.Context, tx repository.Transaction, url string) (int64, error)
-	UpdateCode(ctx context.Context, tx repository.Transaction, id int64, code string) error
+	InsertURL(ctx context.Context, tx repository.Transaction, url string) (uint64, error)
+	UpdateCode(ctx context.Context, tx repository.Transaction, id uint64, code string) error
 	BeginTx(ctx context.Context) (repository.Transaction, error)
 	UpdateAnylitics(ctx context.Context, code string) error
 }
@@ -26,4 +26,9 @@ func NewURLHandler(repo URLRepository, logger *logger.Logger) *URLHandler {
 		repo:    repo,
 		loggeer: logger,
 	}
+}
+
+// dto
+type registerDTO struct {
+	Url string `json:"url"`
 }

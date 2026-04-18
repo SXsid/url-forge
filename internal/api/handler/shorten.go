@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"sync/atomic"
 )
 
 var count uint64 = 0
@@ -38,6 +38,9 @@ func obsufication(baseNumber uint64) uint64 {
 }
 
 func encode(number uint64) string {
+	if number == 0 {
+		return string(Alphabet[0])
+	}
 	runes := []rune{}
 	for number > 0 {
 		rem := number % uint64(BASE)
@@ -51,6 +54,40 @@ func encode(number uint64) string {
 }
 
 func (h *URLHandler) Register(w http.ResponseWriter, r *http.Request) {
-	count = atomic.AddUint64(&count, 1)
-	fmt.Fprintf(w, "<h1>%s</h1>", encode(obsufication(count)))
+	ctx := r.Context()
+	// deseerizle
+	var request registerDTO
+	decodeer := json.NewDecoder(r.Body)
+	if err := decodeer.Decode(&request); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	// validatoin
+	if request.Url == "" {
+		http.Error(w, "can't process empty url", http.StatusBadRequest)
+		return
+
+	}
+	// process (mosty servicee layer )
+	tx, err := h.repo.BeginTx(ctx)
+	defer tx.Rollback(ctx)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	id, err := h.repo.InsertURL(ctx, tx, request.Url)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	code := encode(obsufication(id))
+	if err := h.repo.UpdateCode(ctx, tx, id, code); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := tx.Commit(ctx); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	fmt.Fprint(w, code)
 }
