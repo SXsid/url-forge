@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,13 +10,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github/SXsid/url-forge/internal"
 	"github/SXsid/url-forge/internal/api/router"
+	"github/SXsid/url-forge/internal/cache"
 	"github/SXsid/url-forge/internal/config"
 	"github/SXsid/url-forge/internal/db"
 	"github/SXsid/url-forge/internal/logger"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func setupDB(ctx context.Context, postgresCfg config.DBConfig) (*pgxpool.Pool, error) {
@@ -31,6 +32,8 @@ func setupDB(ctx context.Context, postgresCfg config.DBConfig) (*pgxpool.Pool, e
 }
 
 func main() {
+	port := flag.Int("port", 8080, "port")
+	flag.Parse()
 	ctx := context.Background()
 	config := config.NewServerConfig()
 	logger := logger.NewLogger()
@@ -41,10 +44,15 @@ func main() {
 		os.Exit(-1)
 
 	}
-	app := internal.NewApplication(logger, config, pgpool)
+	rdb, err := cache.RedisClient(ctx, config.Redis.DSN)
+	if err != nil {
+		fmt.Printf("reids is not connected :w,\n", err)
+		os.Exit(-1)
+	}
+	app := internal.NewApplication(logger, config, pgpool, rdb)
 
 	server := http.Server{
-		Addr:         fmt.Sprintf(":%d", config.Port),
+		Addr:         fmt.Sprintf(":%d", *port),
 		Handler:      router.NewRouter(app),
 		IdleTimeout:  time.Duration(config.IdealTime) * time.Second,
 		WriteTimeout: time.Duration(config.WriteTime) * time.Second,
@@ -52,7 +60,7 @@ func main() {
 	}
 
 	go func() {
-		fmt.Printf("server is up and running at %d\n", config.Port)
+		fmt.Printf("server is up and running at %d\n", *port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			fmt.Print(err)
 		}

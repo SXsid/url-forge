@@ -24,8 +24,7 @@ type DBConfig struct {
 	MaxConnIdelTime int
 }
 type RedisConfig struct {
-	URL  string
-	Port int
+	DSN string
 }
 
 func getEnv(key string, required bool) string {
@@ -67,8 +66,7 @@ func NewServerConfig() *ServerConfig {
 			MaxConnIdelTime: getEnvInt("db_max_conn_idle_time", false),
 		},
 		Redis: RedisConfig{
-			URL:  getEnv("redis_url", true),
-			Port: getEnvInt("redis_port", true),
+			DSN: getEnv("redis_dsn", true),
 		},
 	}
 }

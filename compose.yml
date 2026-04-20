@@ -10,7 +10,7 @@ services:
     environment:
       - APP_ENV=dev
     env_file:
-      - .env
+      - .env.docker
     depends_on:
       db:
         condition: service_healthy
@@ -36,22 +36,22 @@ services:
       retries: 5
       start_period: 10s
 
-  # redis:
-  #   image: redis:latest
-  #   container_name: redis
-  #   restart: unless-stopped
-  #   ports:
-  #     - 6379:6379
-  #   volumes:
-  #     - ./redis:/data
-  #   command: >
-  #     redis-server
-  #     --requirepass sid
-  #     --maxmemroy 256mb
-  #     --maxmemory-policy allkeys-lru
-  #     --save 60 1
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "-a", "sid", "ping"]
-  #     retries: 5
-  #     interval: 10s
-  #     timeout: 5s
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis:/data
+    command: >
+      redis-server
+      --requirepass sid
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "sid", "ping"]
+      retries: 5
+      interval: 10s
+      timeout: 5s

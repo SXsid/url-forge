@@ -11,8 +11,15 @@ import (
 type URLHandler struct {
 	repo    URLRepository
 	loggeer *logger.Logger
+	cahche  CahceRepository
 }
 
+type CahceRepository interface {
+	Get(ctx context.Context, key string) (string, error)
+	Set(ctx context.Context, key, value string) error
+	// SetStream() error
+	// GetStream() error
+}
 type URLRepository interface {
 	GetURL(ctx context.Context, code string) (string, error)
 	IsUrlExist(ctx context.Context, url string) (string, error)
@@ -23,10 +30,11 @@ type URLRepository interface {
 	UpdateAnylitics(ctx context.Context, code string) error
 }
 
-func NewURLHandler(repo URLRepository, logger *logger.Logger) *URLHandler {
+func NewURLHandler(repo URLRepository, logger *logger.Logger, chache CahceRepository) *URLHandler {
 	return &URLHandler{
 		repo:    repo,
 		loggeer: logger,
+		cahche:  chache,
 	}
 }
 

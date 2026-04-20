@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-// later when chagne db havve to chagne the input and ourput but thee serive layer don't knwo what db use use
 type Transaction interface {
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error

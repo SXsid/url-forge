@@ -5,8 +5,10 @@ import (
 	"github/SXsid/url-forge/internal/config"
 	"github/SXsid/url-forge/internal/logger"
 	repository "github/SXsid/url-forge/internal/repository/postgres"
+	redisChache "github/SXsid/url-forge/internal/repository/redis"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 type Applicaton struct {
@@ -14,16 +16,19 @@ type Applicaton struct {
 	Logger     *logger.Logger
 	UrlHandler *handler.URLHandler
 	Pgpool     *pgxpool.Pool
+	rdc        *redis.Client
 }
 
 // merge all
-func NewApplication(logger *logger.Logger, config *config.ServerConfig, pg *pgxpool.Pool) *Applicaton {
+func NewApplication(logger *logger.Logger, config *config.ServerConfig, pg *pgxpool.Pool, rdc *redis.Client) *Applicaton {
 	repo := repository.NewUrlRepository(pg)
-	handler := handler.NewURLHandler(repo, logger)
+	chache := redisChache.NewRedisCache(rdc)
+	handler := handler.NewURLHandler(repo, logger, chache)
 	return &Applicaton{
 		Logger:     logger,
 		Config:     config,
 		UrlHandler: handler,
 		Pgpool:     pg,
+		rdc:        rdc,
 	}
 }
