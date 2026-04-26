@@ -6,7 +6,7 @@ database
 *.so
 *.dylib
 
-redis
+redisData
 # Test binary, built with `go test -c`
 *.test
 

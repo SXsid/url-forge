@@ -82,12 +82,13 @@ func (h *URLHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	// process (mosty servicee layer )
 	tx, err := h.repo.BeginTx(ctx)
-	defer tx.Rollback(ctx)
 	// INFO : ideall  a db error shold be logged not send so please take care on that in prod
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	defer tx.Rollback(ctx)
 	id, err := h.repo.InsertURL(ctx, tx, request.Url)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
